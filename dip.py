@@ -42,9 +42,9 @@ def datu_ievade():
 
     jautajumi = {
         "sezonas_nr": "Kura sezona?",
-        "serijas_nr": "Kura serija?",
-        "beigtais": "Kas ir upuris? s/v",
-        "vainigais": "Kas ir vainīgais? s/v",
+        "serijas_nr": "Kura sērija?",
+        "beigtais": "Kas ir upuris (s/v)?",
+        "vainigais": "Kas ir vainīgais (s/v)?",
         "ierocis": "Kas bija ierocis?",
         "motivs": "Kāds bija motīvs?"
     }
@@ -72,7 +72,7 @@ def datu_izvade():
 
     sezonas_nr = input("Ievadi sezonas numuru: ")
     serijas_nr = input("Ievadi sērijas numuru: ")
-
+    print()
     # Nolasa konkrētās sērijas datus
     cursor.execute('''
         SELECT sezonas_nr, serijas_nr, beigtais, vainigais, ierocis, motivs 
@@ -89,6 +89,7 @@ def datu_izvade():
         print(f"Vainīgais: {serija[3]}")
         print(f"Ierocis: {serija[4]}")
         print(f"Motīvs: {serija[5]}")
+        print()
     else:
         print("Dati par šo sēriju nav atrasti.")
 
