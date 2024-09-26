@@ -40,35 +40,80 @@ CREATE TABLE IF NOT EXISTS Serijas (
     FOREIGN KEY (aizdomas_turama_ID) REFERENCES aizdomas_turamie(ID)
 )
 ''')
+def datu_ievade():
 
+    jautajumi = {
+        "sezonas_nr": "Kura sezona?",
+        "serijas_nr": "Kura serija?",
+        "beigtais": "Kas ir upuris? s/v",
+        "vainigais": "Kas ir vainīgais? s/v",
+        "ierocis": "Kas bija ierocis?",
+        "motivs": "Kāds bija motīvs?"
+    }
+    atbildes = {}
 
-jautajumi = {
-    "sezonas_nr": "Kura sezona?",
-    "serijas_nr": "Kura serija?",
-    "beigtais": "Kas ir upuris? s/v",
-    "vainigais": "Kas ir vainīgais? s/v",
-    "ierocis": "Kas bija ierocis?",
-    "motivs": "Kāds bija motīvs?"
-}
-atbildes = {}
+    # Iterē cauri jautājumiem un prasa lietotājam atbildes
+    for atslēga, jautajums in jautajumi.items():
+        atbilde = input(jautajums + " ")
+        atbildes[atslēga] = atbilde
 
-# Iterē cauri jautājumiem un prasa lietotājam atbildes
-for atslēga, jautajums in jautajumi.items():
-    atbilde = input(jautajums + " ")
-    atbildes[atslēga] = atbilde
+    # Savienojums ar datubāzi
+    conn = sqlite3.connect('dip.db')
+    cursor = conn.cursor()
 
-# Savienojums ar datubāzi
-conn = sqlite3.connect('dip.db')
-cursor = conn.cursor()
+    # SQL pieprasījums datu ievietošanai
+    cursor.execute('''
+        INSERT INTO Serijas (sezonas_nr, serijas_nr, beigtais, vainigais, ierocis, motivs)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (atbildes["sezonas_nr"], atbildes["serijas_nr"], atbildes["beigtais"], atbildes["vainigais"], atbildes["ierocis"], atbildes["motivs"]))
+    
+    # Apstiprina izmaiņas un aizver savienojumu
+    conn.commit()
+    conn.close()
+    return atbildes
 
-# SQL pieprasījums datu ievietošanai
-cursor.execute('''
-    INSERT INTO Serijas (sezonas_nr, serijas_nr, beigtais, vainigais, ierocis, motivs)
-    VALUES (?, ?, ?, ?, ?, ?)
-''', (atbildes["sezonas_nr"], atbildes["serijas_nr"], atbildes["beigtais"], atbildes["vainigais"], atbildes["ierocis"], atbildes["motivs"]))
+def datu_izvade():
+    conn = sqlite3.connect('dip.db')
+    cursor = conn.cursor()
 
-# Apstiprina izmaiņas un aizver savienojumu
-conn.commit()
-conn.close()
+    # Lietotājs izvēlas sezonas un sērijas numuru
+    sezonas_nr = input("Ievadiet sezonas numuru: ")
+    serijas_nr = input("Ievadiet sērijas numuru: ")
 
+    # Nolasīt datus par konkrēto sēriju
+    cursor.execute('''
+        SELECT Serijas.sezonas_nr, Serijas.serijas_nr, Serijas.beigtais, Serijas.vainigais, Serijas.ierocis, 
+               Serijas.motivs, Policisti.vards, Policisti.uzvards, Policisti.dienesta_pakape 
+        FROM Serijas
+        JOIN Policisti ON Serijas.policista_ID = Policisti.ID
+        WHERE Serijas.sezonas_nr = ? AND Serijas.serijas_nr = ?
+    ''', (sezonas_nr, serijas_nr))
+
+    serija = cursor.fetchone()
+
+    # Izvadīt sērijas datus, ja tie eksistē
+    if serija:
+        print(f"Sērija {serija[1]} no sezonas {serija[0]}:")
+        print(f"Upuris: {serija[2]}")
+        print(f"Vainīgais: {serija[3]}")
+        print(f"Ierocis: {serija[4]}")
+        print(f"Motīvs: {serija[5]}")
+        print(f"Policists: {serija[6]} {serija[7]}, Dienesta pakāpe: {serija[8]}")
+    else:
+        print("Dati par šo sēriju nav atrasti.")
+
+    # Slēdz savienojumu ar datubāzi
+    conn.close()
+
+def izvelies():
+    while True:
+        izvele = input("Vai vēlies datus ievadīt vai nolasīt? i/n").lower()
+        if izvele == "i":
+            return datu_ievade()
+        elif izvele == "n":
+            return datu_izvade()
+        else:
+            print("Nesapratu tavu izvēli, mēģini vēlreiz.")
+
+izvelies()
 print("Izskatās, ka izdevās")
