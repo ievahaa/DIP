@@ -2,8 +2,6 @@ import sqlite3
 
 # Izveido savienojumu ar datubāzi (ja datubāze nepastāv, tā tiks izveidota)
 conn = sqlite3.connect('dip.db')
-
-# Izveido kursoru
 cursor = conn.cursor()
 
 # Izveido tabulu Policisti
@@ -15,7 +13,7 @@ CREATE TABLE IF NOT EXISTS Policisti (
     dienesta_pakape TEXT NOT NULL
 )
 ''')
-# Izveido tabulu Aizdomās turamie
+# Izveido tabulu aizdomas_turamie
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS aizdomas_turamie (
     ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +22,7 @@ CREATE TABLE IF NOT EXISTS aizdomas_turamie (
 )
 ''')
 
-# Izveido tabulu Sērijas
+# Izveido tabulu Serijas
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS Serijas (
     sezonas_nr INTEGER,
@@ -52,22 +50,18 @@ def datu_ievade():
     }
     atbildes = {}
 
-    # Iterē cauri jautājumiem un prasa lietotājam atbildes
     for atslēga, jautajums in jautajumi.items():
         atbilde = input(jautajums + " ")
         atbildes[atslēga] = atbilde
 
-    # Savienojums ar datubāzi
     conn = sqlite3.connect('dip.db')
     cursor = conn.cursor()
 
-    # SQL pieprasījums datu ievietošanai
     cursor.execute('''
         INSERT INTO Serijas (sezonas_nr, serijas_nr, beigtais, vainigais, ierocis, motivs)
         VALUES (?, ?, ?, ?, ?, ?)
     ''', (atbildes["sezonas_nr"], atbildes["serijas_nr"], atbildes["beigtais"], atbildes["vainigais"], atbildes["ierocis"], atbildes["motivs"]))
     
-    # Apstiprina izmaiņas un aizver savienojumu
     conn.commit()
     conn.close()
     return atbildes
@@ -76,38 +70,33 @@ def datu_izvade():
     conn = sqlite3.connect('dip.db')
     cursor = conn.cursor()
 
-    # Lietotājs izvēlas sezonas un sērijas numuru
-    sezonas_nr = input("Ievadiet sezonas numuru: ")
-    serijas_nr = input("Ievadiet sērijas numuru: ")
+    sezonas_nr = input("Ievadi sezonas numuru: ")
+    serijas_nr = input("Ievadi sērijas numuru: ")
 
-    # Nolasīt datus par konkrēto sēriju
+    # Nolasa konkrētās sērijas datus
     cursor.execute('''
-        SELECT Serijas.sezonas_nr, Serijas.serijas_nr, Serijas.beigtais, Serijas.vainigais, Serijas.ierocis, 
-               Serijas.motivs, Policisti.vards, Policisti.uzvards, Policisti.dienesta_pakape 
+        SELECT sezonas_nr, serijas_nr, beigtais, vainigais, ierocis, motivs 
         FROM Serijas
-        JOIN Policisti ON Serijas.policista_ID = Policisti.ID
-        WHERE Serijas.sezonas_nr = ? AND Serijas.serijas_nr = ?
+        WHERE sezonas_nr = ? AND serijas_nr = ?
     ''', (sezonas_nr, serijas_nr))
 
     serija = cursor.fetchone()
 
-    # Izvadīt sērijas datus, ja tie eksistē
+    # Izvada prasītās sērijas datus, ja tie eksistē
     if serija:
-        print(f"Sērija {serija[1]} no sezonas {serija[0]}:")
+        print(f"Sērija: S{serija[0]} E{serija[1]}")
         print(f"Upuris: {serija[2]}")
         print(f"Vainīgais: {serija[3]}")
         print(f"Ierocis: {serija[4]}")
         print(f"Motīvs: {serija[5]}")
-        print(f"Policists: {serija[6]} {serija[7]}, Dienesta pakāpe: {serija[8]}")
     else:
         print("Dati par šo sēriju nav atrasti.")
 
-    # Slēdz savienojumu ar datubāzi
     conn.close()
 
 def izvelies():
     while True:
-        izvele = input("Vai vēlies datus ievadīt vai nolasīt? i/n").lower()
+        izvele = input("Vai vēlies datus ievadīt vai nolasīt? i/n: \n").lower()
         if izvele == "i":
             return datu_ievade()
         elif izvele == "n":
