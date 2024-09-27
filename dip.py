@@ -54,7 +54,7 @@ def datu_ievade():
         
         atbilde = input(jautajums + " ")
         
-        if atslega == "serijas_nr":
+        if atslega == "serijas_nr" or atslega == "sezonas_nr":
             atbilde, jautajums = parbaude(atbilde, jautajums)
 
         if atslega == "beigtais":
@@ -82,6 +82,7 @@ def datu_izvade():
     sezonas_nr = input("Ievadi sezonas numuru: ")
     serijas_nr = input("Ievadi sērijas numuru: ")
     print()
+    
     # Nolasa konkrētās sērijas datus
     cursor.execute('''
         SELECT sezonas_nr, serijas_nr, beigtais, vainigais, ierocis, motivs 
@@ -100,7 +101,7 @@ def datu_izvade():
         print(f"Motīvs: {serija[5]}")
         print()
     else:
-        print("Dati par šo sēriju nav atrasti.")
+        print("Datus par šo sēriju neatrodu...")
 
     conn.close()
 
