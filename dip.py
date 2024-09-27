@@ -50,9 +50,18 @@ def datu_ievade():
     }
     atbildes = {}
 
-    for atslēga, jautajums in jautajumi.items():
+    for atslega, jautajums in jautajumi.items():
+        
         atbilde = input(jautajums + " ")
-        atbildes[atslēga] = atbilde
+        
+        if atslega == "serijas_nr":
+            atbilde, jautajums = parbaude(atbilde, jautajums)
+
+        if atslega == "beigtais":
+            while atbilde not in ["s", "v"]:
+                print("Ievadi tikai s (ja sieviete) vai v (ja vīrietis).")
+        
+        atbildes[atslega] = atbilde
 
     conn = sqlite3.connect('dip.db')
     cursor = conn.cursor()
@@ -104,6 +113,18 @@ def izvelies():
             return datu_izvade()
         else:
             print("Nesapratu tavu izvēli, mēģini vēlreiz.")
+
+
+def parbaude(atb, jaut):
+    while True:
+        try:
+            int(atb)  
+            break  
+        except ValueError:
+            print("Ievadi korektu skaitli.")
+            atb = input(jaut + " ")  
+    return atb, jaut
+
 
 izvelies()
 print("Izskatās, ka izdevās")
